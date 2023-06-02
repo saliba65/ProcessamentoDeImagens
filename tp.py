@@ -1,20 +1,22 @@
 '''
     Disciplina: Processamento e Análise de Imagens - Ciência da Computação, PUC Minas
     Professor: Alexei 
-    Autores: Fernanda Passos, Lucas Saliba e Ygor Melo
+    Autores: Lucas Saliba (650625) e Ygor Melo
 '''
 
-import sys
-from PyQt6.QtWidgets import QApplication, QWidget
+import tkinter 
+from tkinter.filedialog import askopenfilename
+from PIL import ImageTk, Image 
 
-# Declarando um objeto para criar a aplicação 
-app = QApplication(sys.argv)
+# Usando tkinter para leitura de imagens
+#Permitindo buscar arquivos png e tiff na biblioteca 
+root = tkinter.Tk() 
+filetypes = (('Png files', '*.png'),('Tiff files', '*.tiff'))
+filename = askopenfilename(filetypes=filetypes)
 
-# Declarando um objeto para criação da janela principal
-windown = QWidget()
-windown.resize(800, 600)
-windown.setWindowTitle("Segmentação e Classificação de Imagens Mamográficas - Processamento e Análise de Imagens, PUC Minas")
-windown.show()
+img = ImageTk.PhotoImage(Image.open(filename)) 
+panel = tkinter.Label(root, image = img) 
+panel.pack(side = "bottom", fill = "both", 
+           expand = "yes") 
 
-app.exec()
-
+root.mainloop()
