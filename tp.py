@@ -45,5 +45,21 @@ slider = tkinter.Scale(
 
 slider.pack()
 
+# Segmentacao de imagem
+def segmentar_imagem():
+    imgCv2 = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
+    # Aplicando limiarizacao binaria
+    # # Aplicando filtro de Gaus para melhor limiarizacao
+    # out = cv2.GaussianBlur(imgCv2, (7,7), 0)
+    # Valor de decisao = 7
+    out = cv2.threshold(imgCv2, 7, 255, cv2.THRESH_BINARY)[1]
+    out = cv2.resize(out, (384,384))
+    img = ImageTk.PhotoImage(Image.fromarray(out)) 
+    panel.configure(image=img)
+    panel.image = img
+
+#Botoes
+button = tkinter.Button(root, text="Segmentar", command=segmentar_imagem)
+button.pack()
 
 root.mainloop()
