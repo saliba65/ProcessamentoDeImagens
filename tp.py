@@ -9,6 +9,7 @@ import PIL
 import PIL.ImageTk
 import tkinter
 import tkinter.filedialog
+import imutils
 
 # Funcao contraste da imagem
 def scale_event_1(event: str) -> None:
@@ -39,6 +40,18 @@ def scale_event_2(event: str) -> None:
 
     label_1.image = image
 
+# Funcao zoom na imagem
+def scale_event_3(event: str) -> None:
+    image_cv2 = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
+
+    image_cv2 = cv2.resize(image_cv2, None, fx=scale_3.get() / 10 + 1, fy=scale_3.get() / 10 + 1) 
+    
+    image = PIL.ImageTk.PhotoImage(PIL.Image.fromarray(image_cv2))
+
+    label_1.configure(image=image)
+
+    label_1.image = image
+
 # Usando tkinter para leitura de imagens
 #Permitindo buscar arquivos png e tiff na biblioteca 
 
@@ -53,7 +66,7 @@ image = image.resize((384, 384))
 
 image = PIL.ImageTk.PhotoImage(image)
 
-#Criacao do slider para alteracao de contraste
+# Criacao do slider para alteracao de contraste
 scale_1 = tkinter.Scale(
     root,
     command=scale_event_1,
@@ -73,11 +86,22 @@ scale_2 = tkinter.Scale(
     to=255
 )
 
+# Zoom image
+scale_3 = tkinter.Scale(
+    root,
+    command=scale_event_3,
+    orient='horizontal',
+    label='ZOOM',
+    from_=0,
+    to=7
+)
+
 #Chamada de componentes
 label_1 = tkinter.Label(root, image=image)
 
 scale_1.pack()
 scale_2.pack()
+scale_3.pack()
 
 label_1.pack()
 
