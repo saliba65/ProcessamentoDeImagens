@@ -9,7 +9,9 @@ import PIL
 import PIL.ImageTk
 import tkinter
 import tkinter.filedialog
-import imutils
+import os
+import tqdm
+import numpy as np 
 
 # Funcao contraste da imagem
 def scale_event_1(event: str) -> None:
@@ -51,6 +53,57 @@ def scale_event_3(event: str) -> None:
     label_1.configure(image=image)
 
     label_1.image = image
+
+# Verificar se a imagem pertence ao conjunto de testes
+def is_test(file: str) -> bool:
+    id = int(file.split('(')[1].strip(').png'))
+
+    answer = False
+    
+    if id % 4 == 0:
+        answer = True
+
+    return answer
+
+# Ler diretorios de mamografias separando treino e teste já realizando a conversao para numpy array
+def read_data() -> tuple:
+    X_train = []
+    X_test = []
+    y_train = []
+    y_test = []
+
+    y_dict = {
+        'D': 0,
+        'E': 1,
+        'F': 2,
+        'G': 3
+    }
+
+    for folder in tqdm.tqdm(os.listdir('./mamografias')):
+            # Condicional para nao lida arquivos MACOSX
+            if folder != '__MACOSX':
+                for file in os.listdir(f'./mamografias/{folder}'):
+                    if file.endswith('.png'):
+                        image = PIL.Image.open(f'./mamografias/{folder}/{file}')
+
+                        #Atribuir a conjunto de testes
+                        if is_test(file):
+                            X_test.append(np.asarray(image))
+                            y_test.append(y_dict[folder[0]])
+                        #Atribuir a conjunto de treino
+                        else:
+                            X_train.append(np.asarray(image))
+                            y_train.append(y_dict[folder[0]])
+
+    # Conversao para numpy array
+    # x = matrizes de pixels
+    X_train = np.array(X_train, dtype=object)
+    X_test = np.array(X_test, dtype=object)
+    # y = birads respectivos 
+    y_train = np.array(y_train, dtype=object)
+    y_test = np.array(y_test, dtype=object)
+
+    return (X_train, X_test, y_train, y_test)
 
 # Usando tkinter para leitura de imagens
 #Permitindo buscar arquivos png e tiff na biblioteca 
