@@ -105,6 +105,16 @@ def read_data() -> tuple:
 
     return (X_train, X_test, y_train, y_test)
 
+# Segmentacao automatica de imagens do diretorio
+def apply_threshold(X_array: np.array) -> np.array:
+    X_transformed = []
+
+    for X in X_array:
+        # Aplicacao de segmentacao binaria em cada item recebido
+        X_transformed.append(cv2.threshold(X, 7, 255, cv2.THRESH_BINARY)[1])
+
+    return np.array(X_transformed, dtype=object)
+
 # Usando tkinter para leitura de imagens
 #Permitindo buscar arquivos png e tiff na biblioteca 
 
@@ -157,5 +167,12 @@ scale_2.pack()
 scale_3.pack()
 
 label_1.pack()
+
+# Criacao de variaveis
+X_train, X_test, y_train, y_test = read_data() 
+
+#Aplicando segmentacao
+X_train = apply_threshold(X_train)
+X_test = apply_threshold(X_test)
 
 root.mainloop()
