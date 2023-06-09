@@ -182,6 +182,11 @@ print(X_train[2])
 X_train_invert = cv2.flip(X_train[2], flipCode=1)
 print(X_train_invert)
 
+#Equalizando histogramas
+print(X_train[2])
+X_train_equalize = cv2.equalizeHist(X_train[2])
+print(X_train_equalize)
+
 #Aplicando segmentacao
 X_train = apply_threshold(X_train)
 X_test = apply_threshold(X_test)
