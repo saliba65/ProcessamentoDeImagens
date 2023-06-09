@@ -66,11 +66,11 @@ def is_test(file: str) -> bool:
     return answer
 
 # Ler diretorios de mamografias separando treino e teste já realizando a conversao para numpy array
-def read_data() -> tuple:
-    X_train = []
-    X_test = []
-    y_train = []
-    y_test = []
+def read_data(X_train,X_test,y_train,y_test) -> tuple:
+    # X_train = []
+    # X_test = []
+    # y_train = []
+    # y_test = []
 
     y_dict = {
         'D': 0,
@@ -102,6 +102,8 @@ def read_data() -> tuple:
     # y = birads respectivos 
     y_train = np.array(y_train, dtype=object)
     y_test = np.array(y_test, dtype=object)
+
+    print("Li o diretorio")
 
     return (X_train, X_test, y_train, y_test)
 
@@ -159,20 +161,31 @@ scale_3 = tkinter.Scale(
     to=7
 )
 
+
+# Criacao de variaveis
+X_train = []
+X_test = [] 
+y_train = [] 
+y_test = []
+
+#Botoes
+button = tkinter.Button(root, text="Ler diretorio", command=read_data(X_train,X_test,y_train,y_test))
+button = tkinter.Button(root, text="Segmentar Treino", command=apply_threshold(X_train))
+button = tkinter.Button(root, text="Segmentar Teste", command=apply_threshold(X_test))
+
+
 #Chamada de componentes
 label_1 = tkinter.Label(root, image=image)
 
 scale_1.pack()
 scale_2.pack()
 scale_3.pack()
+button.pack()
 
 label_1.pack()
 
-# Criacao de variaveis
-X_train, X_test, y_train, y_test = read_data() 
-
 #Aplicando segmentacao
-X_train = apply_threshold(X_train)
-X_test = apply_threshold(X_test)
+# X_train = apply_threshold(X_train)
+# X_test = apply_threshold(X_test)
 
 root.mainloop()
