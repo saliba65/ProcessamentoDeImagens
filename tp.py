@@ -13,6 +13,20 @@ import os
 import tqdm
 import numpy as np 
 
+def start_program() -> None:
+    # Ler diretorio e atribir variaveis 
+    X_train, X_test, y_train, y_test = read_data()
+
+    # Chamada funcao de inversao 
+    X_train, y_train = flip_data(X_train, y_train)
+
+    # Chamada funcao de equalizar
+    X_train, y_train = equalize_data(X_train, y_train)
+
+    #Aplicando segmentacao
+    X_train = apply_threshold(X_train)
+    X_test = apply_threshold(X_test)
+
 # Funcao contraste da imagem
 def scale_event_1(event: str) -> None:
     image_cv2 = cv2.imread(file_name)
@@ -65,7 +79,7 @@ def is_test(file: str) -> bool:
 
     return answer
 
-# Ler diretorios de mamografias separando treino e teste já realizando a conversao para numpy array
+# Ler diretorios de mamografias separando treino e teste
 def read_data() -> tuple:
     X_train = []
     X_test = []
@@ -82,7 +96,7 @@ def read_data() -> tuple:
     for folder in tqdm.tqdm(os.listdir('./mamografias')):
             # Condicional para nao lida arquivos MACOSX
             if folder != '__MACOSX':
-                for file in os.listdir(f'./mamografias/{folder}'):
+                for file in os.listdir(f'./mamografias/{folder}')[:10]:
                     if file.endswith('.png'):
                         image = PIL.Image.open(f'./mamografias/{folder}/{file}')
 
@@ -95,20 +109,41 @@ def read_data() -> tuple:
                             X_train.append(np.asarray(image))
                             y_train.append(y_dict[folder[0]])
 
-    # Conversao para numpy array
-    # x = matrizes de pixels
-    X_train = np.array(X_train, dtype=object)
-    X_test = np.array(X_test, dtype=object)
-    # y = birads respectivos 
-    y_train = np.array(y_train, dtype=object)
-    y_test = np.array(y_test, dtype=object)
+    # # Conversao para numpy array
+    # # x = matrizes de pixels
+    # X_train = np.array(X_train, dtype=object)
+    # X_test = np.array(X_test, dtype=object)
+    # # y = birads respectivos 
+    # y_train = np.array(y_train, dtype=object)
+    # y_test = np.array(y_test, dtype=object)
 
     return (X_train, X_test, y_train, y_test)
 
+#Invertendo imagens de treino
+def flip_data(X_train: list, y_train: list) -> tuple:
+    X_transformed = X_train.copy()
+    y_transformed = y_train.copy()
+    
+    for X, y in zip(X_train, y_train):
+        X_transformed.append(cv2.flip(X, flipCode=1))
+        y_transformed.append(y)
+
+    return (X_transformed, y_transformed)
+
+#Equalizando histogramas
+def equalize_data(X_train: list, y_train: list) -> tuple:
+    X_transformed = X_train.copy()
+    y_transformed = y_train.copy()
+    
+    for X, y in zip(X_train, y_train):
+        X_transformed.append(cv2.equalizeHist(X))
+        y_transformed.append(y)
+
+    return (X_transformed, y_transformed)
+    
 # Segmentacao automatica de imagens do diretorio
 def apply_threshold(X_array: np.array) -> np.array:
     X_transformed = []
-
     for X in X_array:
         # Aplicacao de segmentacao binaria em cada item recebido
         X_transformed.append(cv2.threshold(X, 7, 255, cv2.THRESH_BINARY)[1])
@@ -116,8 +151,7 @@ def apply_threshold(X_array: np.array) -> np.array:
     return np.array(X_transformed, dtype=object)
 
 # Usando tkinter para leitura de imagens
-#Permitindo buscar arquivos png e tiff na biblioteca 
-
+# Permitindo buscar arquivos png e tiff na biblioteca 
 root = tkinter.Tk()
 root.geometry('512x512')
 filetypes = (('PNG File', '*.png'), ('TIFF File', '*.tiff'))
@@ -160,9 +194,7 @@ scale_3 = tkinter.Scale(
 )
 
 #Botoes
-# button = tkinter.Button(root, text="Ler diretorio", command=read_data(X_train,X_test,y_train,y_test))
-# button = tkinter.Button(root, text="Segmentar Treino", command=apply_threshold(X_train))
-# button = tkinter.Button(root, text="Segmentar Teste", command=apply_threshold(X_test))
+button = tkinter.Button(root, text="Start", command=start_program)
 
 #Chamada de componentes
 label_1 = tkinter.Label(root, image=image)
@@ -170,25 +202,8 @@ label_1 = tkinter.Label(root, image=image)
 scale_1.pack()
 scale_2.pack()
 scale_3.pack()
-# button.pack()
+button.pack()
 
 label_1.pack()
-
-# Criacao de variaveis
-X_train,X_test,y_train,y_test = read_data()
-
-#Invertendo imagens de treino
-print(X_train[2])
-X_train_invert = cv2.flip(X_train[2], flipCode=1)
-print(X_train_invert)
-
-#Equalizando histogramas
-print(X_train[2])
-X_train_equalize = cv2.equalizeHist(X_train[2])
-print(X_train_equalize)
-
-#Aplicando segmentacao
-X_train = apply_threshold(X_train)
-X_test = apply_threshold(X_test)
 
 root.mainloop()
