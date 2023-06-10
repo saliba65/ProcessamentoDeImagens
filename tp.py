@@ -12,6 +12,7 @@ import tkinter.filedialog
 import os
 import tqdm
 import numpy as np 
+import tensorflow as tf
 
 # Funcao contraste da imagem
 def scale_event_1(event: str) -> None:
@@ -73,14 +74,22 @@ def start_program() -> None:
     y_test_binary = convert_binary(y_test)
 
     # Transformacao para numpy array 
-    X_train = np.array(X_train)
-    X_test = np.array(X_test)
+    X_train = np.array(X_train, dtype="float32")
+    X_train = np.expand_dims(X_train, -1)
+    X_test = np.array(X_test, dtype="float32")
+    X_test = np.expand_dims(X_test, -1)
     y_train = np.array(y_train)
+    y_train = np.expand_dims(y_train, -1)
+    y_train = np.expand_dims(y_train, -1)
+    y_train = np.expand_dims(y_train, -1)
+    #y_train = tf.keras.utils.to_categorical(y_train, 4)
     y_test = np.array(y_test)
-    y_train_binary = np.array(y_train_binary)
-    y_test_binary = np.array(y_test_binary)
+    #y_test = tf.keras.utils.to_categorical(y_test, 4)
+    y_train_binary = np.array(y_train_binary, dtype="float32")
+    y_test_binary = np.array(y_test_binary, dtype="float32")
 
-
+    # Rede Neural
+    conv_next(X_train, X_test, y_train, y_test)
 
 # Verificar se a imagem pertence ao conjunto de testes
 def is_test(file: str) -> bool:
@@ -112,15 +121,17 @@ def read_data() -> tuple:
             if folder != '__MACOSX':
                 for file in os.listdir(f'./mamografias/{folder}')[:10]:
                     if file.endswith('.png'):
-                        image = PIL.Image.open(f'./mamografias/{folder}/{file}')
+                        image = cv2.imread(f'./mamografias/{folder}/{file}', cv2.IMREAD_GRAYSCALE)
+                        # Resize imagens para rede neural
+                        image = cv2.resize(image, (224, 224))
 
                         #Atribuir a conjunto de testes
                         if is_test(file):
-                            X_test.append(np.asarray(image))
+                            X_test.append(image)
                             y_test.append(y_dict[folder[0]])
                         #Atribuir a conjunto de treino
                         else:
-                            X_train.append(np.asarray(image))
+                            X_train.append(image)
                             y_train.append(y_dict[folder[0]])
 
     # # Conversao para numpy array
@@ -179,6 +190,31 @@ def convert_binary(y_array: list) -> list:
         y_transformed.append(y_dict[y])
 
     return y_transformed
+
+# Aplicacao da rede neural ConvNext 
+def conv_next(X_train: np.array, X_test: np.array, y_train: np.array, y_test: np.array) -> None:
+    model = tf.keras.applications.ConvNeXtBase(
+        model_name="convnext_base",
+        include_top=False,
+        include_preprocessing=False,
+        weights=None,
+        input_tensor=tf.keras.layers.Input(shape=(224, 224, 1)),
+        input_shape=None,
+        pooling=None,
+        classes=4,
+        classifier_activation="softmax"
+    )
+
+    print('convnext')
+
+    model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
+
+    print('compile')
+
+    model.fit(X_train, y_train, verbose=1)
+
+    print('fit')
+
 
 # Usando tkinter para leitura de imagens
 # Permitindo buscar arquivos png e tiff na biblioteca 
