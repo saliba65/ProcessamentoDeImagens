@@ -267,39 +267,39 @@ def conv(X_train: list, X_test: list, y_train: list, y_test: list, classes: int)
 
     f1_score = 2 * (score[2] * score[3]) / (score[2] + score[3])
 
-    # # Modelo Binario
-    # if classes == 2:
-    #     text = f'''
-    #         Binário (2 Classes):\n
-    #         Loss: {score[0]:.4f}
-    #          Acurácia: {score[1]:.4f}
-    #          F1 Score: {f1_score:.4f}
-    #          Precisao: {score[2]:.4f}
-    #          Sensibilidade: {score[3]:.4f}
-    #          Especificidade: {score[4]:.4f}
-    #          Tempo: {time.time() - start:.2f}s
-    #     '''
+    # Modelo Binario
+    if classes == 2:
+        text = f'''
+            Binário (2 Classes):\n
+            Loss: {score[0]:.4f}
+             Acurácia: {score[1]:.4f}
+             F1 Score: {f1_score:.4f}
+             Precisao: {score[2]:.4f}
+             Sensibilidade: {score[3]:.4f}
+             Especificidade: {score[4]:.4f}
+             Tempo: {time.time() - start:.2f}s
+        '''
         
-    #     label_2.configure(text=text)
+        label_2.configure(text=text)
 
-    #     label_2.text = text
+        label_2.text = text
         
-    # # Modelo 4 classes
-    # else:
-    #     text = f'''
-    #         4 Classes:\n
-    #         Loss: {score[0]:.4f}
-    #          Acurácia: {score[1]:.4f}
-    #          F1 Score: {f1_score:.4f}
-    #          Precisao: {score[2]:.4f}
-    #          Sensibilidade: {score[3]:.4f}
-    #          Especificidade: {score[4]:.4f}
-    #          Tempo: {time.time() - start:.2f}s
-    #     '''
+    # Modelo 4 classes
+    else:
+        text = f'''
+            4 Classes:\n
+            Loss: {score[0]:.4f}
+             Acurácia: {score[1]:.4f}
+             F1 Score: {f1_score:.4f}
+             Precisao: {score[2]:.4f}
+             Sensibilidade: {score[3]:.4f}
+             Especificidade: {score[4]:.4f}
+             Tempo: {time.time() - start:.2f}s
+        '''
         
-    #     label_3.configure(text=text)
+        label_3.configure(text=text)
 
-    #     label_3.text = text
+        label_3.text = text
 
 
 # Usando tkinter para leitura de imagens
