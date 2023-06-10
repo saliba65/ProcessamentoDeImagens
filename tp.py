@@ -13,20 +13,6 @@ import os
 import tqdm
 import numpy as np 
 
-def start_program() -> None:
-    # Ler diretorio e atribir variaveis 
-    X_train, X_test, y_train, y_test = read_data()
-
-    # Chamada funcao de inversao 
-    X_train, y_train = flip_data(X_train, y_train)
-
-    # Chamada funcao de equalizar
-    X_train, y_train = equalize_data(X_train, y_train)
-
-    #Aplicando segmentacao
-    X_train = apply_threshold(X_train)
-    X_test = apply_threshold(X_test)
-
 # Funcao contraste da imagem
 def scale_event_1(event: str) -> None:
     image_cv2 = cv2.imread(file_name)
@@ -67,6 +53,34 @@ def scale_event_3(event: str) -> None:
     label_1.configure(image=image)
 
     label_1.image = image
+
+def start_program() -> None:
+    # Ler diretorio e atribir variaveis 
+    X_train, X_test, y_train, y_test = read_data()
+
+    # Chamada funcao de inversao 
+    X_train, y_train = flip_data(X_train, y_train)
+
+    # Chamada funcao de equalizar
+    X_train, y_train = equalize_data(X_train, y_train)
+
+    # Aplicando segmentacao
+    X_train = apply_threshold(X_train)
+    X_test = apply_threshold(X_test)
+
+    # Conversao para classificacao binária
+    y_train_binary = convert_binary(y_train)
+    y_test_binary = convert_binary(y_test)
+
+    # Transformacao para numpy array 
+    X_train = np.array(X_train)
+    X_test = np.array(X_test)
+    y_train = np.array(y_train)
+    y_test = np.array(y_test)
+    y_train_binary = np.array(y_train_binary)
+    y_test_binary = np.array(y_test_binary)
+
+
 
 # Verificar se a imagem pertence ao conjunto de testes
 def is_test(file: str) -> bool:
@@ -119,7 +133,7 @@ def read_data() -> tuple:
 
     return (X_train, X_test, y_train, y_test)
 
-#Invertendo imagens de treino
+# Invertendo imagens de treino
 def flip_data(X_train: list, y_train: list) -> tuple:
     X_transformed = X_train.copy()
     y_transformed = y_train.copy()
@@ -130,7 +144,7 @@ def flip_data(X_train: list, y_train: list) -> tuple:
 
     return (X_transformed, y_transformed)
 
-#Equalizando histogramas
+# Equalizando histogramas
 def equalize_data(X_train: list, y_train: list) -> tuple:
     X_transformed = X_train.copy()
     y_transformed = y_train.copy()
@@ -142,13 +156,29 @@ def equalize_data(X_train: list, y_train: list) -> tuple:
     return (X_transformed, y_transformed)
     
 # Segmentacao automatica de imagens do diretorio
-def apply_threshold(X_array: np.array) -> np.array:
+def apply_threshold(X_array: list) -> list:
     X_transformed = []
     for X in X_array:
         # Aplicacao de segmentacao binaria em cada item recebido
         X_transformed.append(cv2.threshold(X, 7, 255, cv2.THRESH_BINARY)[1])
 
-    return np.array(X_transformed, dtype=object)
+    return X_transformed
+
+# Conversao para classificacao binária
+def convert_binary(y_array: list) -> list:
+    y_transformed = []
+    
+    y_dict = {
+        0: 0,
+        1: 0,
+        2: 1,
+        3: 1
+    }
+
+    for y in y_array:
+        y_transformed.append(y_dict[y])
+
+    return y_transformed
 
 # Usando tkinter para leitura de imagens
 # Permitindo buscar arquivos png e tiff na biblioteca 
