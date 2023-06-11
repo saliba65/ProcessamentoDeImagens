@@ -254,9 +254,9 @@ def flip_data(X_train: list, y_train: list) -> tuple:
         y_transformed.append(y)
 
     # Printando imagem antes e depois da inversao 
-    # print("Inversao de imagem", end="\n\n")
-    # print(X_transformed[0], end="\n\n")
-    # print(X_transformed[len(X_train)], end="\n\n")
+    print("Inversao de imagem", end="\n\n")
+    print(X_transformed[0], end="\n\n")
+    print(X_transformed[len(X_train)], end="\n\n")
 
     return (X_transformed, y_transformed)
 
@@ -270,9 +270,9 @@ def equalize_data(X_train: list, y_train: list) -> tuple:
         y_transformed.append(y)
 
     # Printando imagem antes e depois da equalizacao
-    # print("Equalizacao de histograma", end="\n\n")
-    # print(X_transformed[0], end="\n\n")
-    # print(X_transformed[len(X_train)], end="\n\n") 
+    print("Equalizacao de histograma", end="\n\n")
+    print(X_transformed[0], end="\n\n")
+    print(X_transformed[len(X_train)], end="\n\n") 
 
     return (X_transformed, y_transformed)
     
@@ -284,9 +284,9 @@ def apply_threshold(X_array: list) -> list:
         X_transformed.append(cv2.threshold(X, 7, 255, cv2.THRESH_BINARY)[1])
 
     # Printando imagem antes e depois da equalizacao
-    # print("Segmentacao de imagem", end="\n\n")
-    # print(X_array[0], end="\n\n")
-    # print(X_transformed[0], end="\n\n") 
+    print("Segmentacao de imagem", end="\n\n")
+    print(X_array[0], end="\n\n")
+    print(X_transformed[0], end="\n\n") 
 
     return X_transformed
 
