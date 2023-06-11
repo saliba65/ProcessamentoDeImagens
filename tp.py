@@ -13,7 +13,118 @@ import os
 import time
 import tqdm
 import numpy as np 
+# from tensorflow.keras import layers
+# from tensorflow import keras
 import tensorflow as tf
+# import matplotlib.pyplot as plt
+# import tensorflow_addons as tfa
+
+# AUTO = tf.data.AUTOTUNE
+# BATCH_SIZE=128
+
+# class ConvNext_Block(tf.keras.Model):
+    
+#     """
+#     Implementing the ConvNeXt block for 
+    
+#     Args:
+#         dim: No of input channels
+#         drop_path: stotchastic depth rate 
+#         layer_scale_init_value=1e-6
+    
+#     Returns:
+#         A conv block
+#     """
+    
+#     def __init__(self, dim, drop_path=0.0, layer_scale_init_value=1e-6, **kwargs):
+#         super(ConvNext_Block, self).__init__(**kwargs)
+        
+#         self.depthwise_convolution = layers.Conv2D(dim, kernel_size=7, padding="same", groups=dim )
+#         self.layer_normalization = layers.LayerNormalization(epsilon=1e-6)
+#         self.pointwise_convolution_1 = layers.Dense(4 * dim)
+#         self.GELU = layers.Activation("gelu")
+#         self.pointwise_convolution_2 = layers.Dense(dim)
+#         self.gamma = tf.Variable(layer_scale_init_value * tf.ones((dim,)))
+#         if drop_path>0.0:
+#             self.drop_path=(tfa.layers.StochasticDepth(drop_path))
+#         else:
+#             self.drop_path=layers.Activation("linear")
+        
+
+#     def call(self, inputs):
+#         x = inputs
+#         x = self.depthwise_convolution(x)
+#         x = self.layer_normalization(x)
+#         x = self.pointwise_convolution_1(x)
+#         x = self.GELU(x)
+#         x = self.pointwise_convolution_2(x)
+#         x = self.gamma * x
+
+#         return inputs + self.drop_path(x)
+    
+# def patchify_stem(dims):
+#     """
+#     Implements the stem block of ConvNeXt
+    
+#     Args:
+#         Dims: List of feature dimensions at each stage.
+    
+#     Returns:
+#         feature maps after patchify operation
+#     """
+#     stem = keras.Sequential(
+#         [layers.Conv2D(dims[0], kernel_size=4, strides=4),
+#         layers.LayerNormalization(epsilon=1e-6)],
+#         )
+#     return stem
+
+# def spatial_downsampling(stem,dims,kernel_size,stride):
+#     """
+#     Implements Spatial Downsampling of ConvNeXt
+    
+#     Args:
+#         Dims: List of feature dimensions at each stage.
+#         stem: Patchify stem output of images
+#         kernel_size: Downsampling kernel_size
+#         stride: Downsampling stride length
+#     Returns:
+#         Downsampled layers
+#     """
+
+#     ds_layers = []
+#     ds_layers.append(stem)
+#     for dim in dims[1:]:
+#         layer = keras.Sequential(
+#             [layers.LayerNormalization(epsilon=1e-6),
+#             layers.Conv2D(dim, kernel_size=kernel_size, strides=stride),
+#             ]
+#         )
+#         ds_layers.append(layer)
+        
+#     return ds_layers
+
+# def ConvNext_Stages (dims,drop_path_rate,depths,layer_scale_init_value):
+#     """
+#     Creating stages each consiting of multiple residual blocks
+    
+#     Args:
+#         dims: List of feature dimensions at each stage.
+#         drop_path_rate: Stochastic depth rate
+#         depths: Number of blocks at each stage
+#         layer_scale_init_value: Init value for Layer Scale
+        
+#     """
+#     stages = []
+#     dropout_rates = [x for x in tf.linspace(0.0, drop_path_rate, sum(depths))]
+#     cur = 0
+#     for i in range(len(dims)):
+#         stage = keras.Sequential(
+#             [*[ConvNext_Block(dim=dims[i],drop_path=dropout_rates[cur + j],layer_scale_init_value=layer_scale_init_value) for j in range(depths[i])]
+#             ]
+#         )
+#         stages.append(stage)
+#         cur += depths[i]
+#     return stages
 
 # Funcao contraste da imagem
 def scale_event_1(event: str) -> None:
@@ -91,11 +202,41 @@ def start_program() -> None:
     y_test_binary = np.array(y_test_binary, dtype="float32")
     '''
 
-    # Rede Neural
+    # X_train, X_test = X_train / 255.0, X_test / 255.0 
+    # train_data = tf.data.Dataset.from_tensor_slices((X_train, y_train))
+    # #applying transformations 
+    # train_data = train_data.shuffle(1024) # shuffle the images
+    # train_data = train_data.map(preprocess, num_parallel_calls=AUTO)# mapping our preprocess function to train_data 
+    # train_data = train_data.map(augmentation, num_parallel_calls=AUTO)# mapping our augmentation funtion to train_data
+    # train_data = train_data.batch(BATCH_SIZE) #Converting train_data to batches
+    # train_data = train_data.prefetch(AUTO) # using prefetch which prepares subsequent batches of data while other batches are being computed.
+
+    # test_data = tf.data.Dataset.from_tensor_slices((X_test, y_test))
+    # #applying transformations 
+    # test_data = test_data.map(preprocess, num_parallel_calls=AUTO) # mapping our preprocess function test_data 
+    # test_data = test_data.batch(BATCH_SIZE)
+    # test_data = test_data.prefetch(AUTO) # using prefetch which prepares subsequent batches of data while other batches are being computed.
+
+    # Rede Neural ConvNext
     # conv_next(X_train, X_test, y_train, y_test)
 
-    conv(X_train, X_test, y_train_binary, y_test_binary, 2)
+   # Rede Neural Convolucional
+    # conv(X_train, X_test, y_train_binary, y_test_binary, 2)
     conv(X_train, X_test, y_train, y_test, 4)
+
+
+# # convert images to float32 format 
+# def preprocess (image):
+#     image = tf.image.convert_image_dtype(image, tf.float32)
+#     return image
+
+# #Peform augmentations on training data
+# def augmentation(image):
+#     image = tf.image.resize_with_crop_or_pad(image, 40, 40) # Add 8 pixels of padding
+#     image = tf.image.random_crop(image, size=[32, 32, 3]) # Random crop back to 32x32
+#     image = tf.image.random_brightness(image, max_delta=0.5) # Random brightness
+#     image = tf.clip_by_value(image, 0., 1.)
+#     return image
 
 # Verificar se a imagem pertence ao conjunto de testes
 def is_test(file: str) -> bool:
@@ -189,31 +330,30 @@ def convert_binary(y_array: list) -> list:
 
     return y_transformed
 
-'''
 # Aplicacao da rede neural ConvNext 
-def conv_next(X_train: np.array, X_test: np.array, y_train: np.array, y_test: np.array) -> None:
-    model = tf.keras.applications.ConvNeXtBase(
-        model_name="convnext_base",
-        include_top=False,
-        include_preprocessing=False,
-        weights=None,
-        input_tensor=tf.keras.layers.Input(shape=(224, 224, 1)),
-        input_shape=None,
-        pooling=None,
-        classes=4,
-        classifier_activation="softmax"
-    )
+# def conv_next(X_train: np.array, X_test: np.array, y_train: np.array, y_test: np.array) -> None:
+#     model = tf.keras.applications.ConvNeXtBase(
+#         model_name="convnext_base",
+#         include_top=False,
+#         include_preprocessing=False,
+#         weights=None,
+#         input_tensor=tf.keras.layers.Input(shape=(224, 224, 1)),
+#         input_shape=None,
+#         pooling=None,
+#         classes=4,
+#         classifier_activation="softmax"
+#     )
 
-    print('convnext')
+#     print('convnext')
 
-    model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
+#     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
-    print('compile')
+#     print('compile')
 
-    model.fit(X_train, y_train, verbose=1)
+#     model.fit(X_train, y_train, verbose=1)
 
-    print('fit')
-'''
+#     print('fit')
+
 
 # Rede neural convolucional 
 def conv(X_train: list, X_test: list, y_train: list, y_test: list, classes: int) -> None:
@@ -241,9 +381,11 @@ def conv(X_train: list, X_test: list, y_train: list, y_test: list, classes: int)
     model = tf.keras.Sequential(
         [
             tf.keras.Input(shape=(224, 224, 1)),
-            tf.keras.layers.Conv2D(32, kernel_size=(3, 3), activation="relu"),
-            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
             tf.keras.layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
+            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation="relu"),
+            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            tf.keras.layers.Conv2D(256, kernel_size=(3, 3), activation="relu"),
             tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dropout(0.5),
