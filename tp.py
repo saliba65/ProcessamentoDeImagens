@@ -551,7 +551,7 @@ scale_3 = tkinter.Scale(
 
 #Botoes
 button_1 = tkinter.Button(root, text="Treinar Modelo", command=start_program_train_predict)
-# button_2 = tkinter.Button(root, text="Executar modelo treinado", command=start_program_predict)
+button_2 = tkinter.Button(root, text="Executar modelo treinado", command=start_program_predict)
 
 #Chamada de componentes
 label_1 = tkinter.Label(root, image=image)
