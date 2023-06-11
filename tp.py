@@ -1,7 +1,7 @@
 '''
     Disciplina: Processamento e Análise de Imagens - Ciência da Computação, PUC Minas
     Professor: Alexei 
-    Autores: Lucas Saliba (650625) e Ygor Melo
+    Autores: Lucas Saliba (650625) e Ygor Melo (481699)
 '''
 
 import cv2
@@ -13,15 +13,15 @@ import os
 import time
 import tqdm
 import numpy as np 
-# from tensorflow.keras import layers
-# from tensorflow import keras
 import tensorflow as tf
-# import matplotlib.pyplot as plt
-# import tensorflow_addons as tfa
 
-# AUTO = tf.data.AUTOTUNE
-# BATCH_SIZE=128
+from sklearn.metrics import confusion_matrix
+from seaborn import heatmap
 
+import matplotlib
+
+
+# Tentativa de implementacao ConvNext
 # class ConvNext_Block(tf.keras.Model):
     
 #     """
@@ -103,29 +103,6 @@ import tensorflow as tf
         
 #     return ds_layers
 
-# def ConvNext_Stages (dims,drop_path_rate,depths,layer_scale_init_value):
-#     """
-#     Creating stages each consiting of multiple residual blocks
-    
-#     Args:
-#         dims: List of feature dimensions at each stage.
-#         drop_path_rate: Stochastic depth rate
-#         depths: Number of blocks at each stage
-#         layer_scale_init_value: Init value for Layer Scale
-        
-#     """
-#     stages = []
-#     dropout_rates = [x for x in tf.linspace(0.0, drop_path_rate, sum(depths))]
-#     cur = 0
-#     for i in range(len(dims)):
-#         stage = keras.Sequential(
-#             [*[ConvNext_Block(dim=dims[i],drop_path=dropout_rates[cur + j],layer_scale_init_value=layer_scale_init_value) for j in range(depths[i])]
-#             ]
-#         )
-#         stages.append(stage)
-#         cur += depths[i]
-#     return stages
-
 # Funcao contraste da imagem
 def scale_event_1(event: str) -> None:
     image_cv2 = cv2.imread(file_name)
@@ -159,7 +136,7 @@ def scale_event_2(event: str) -> None:
 def scale_event_3(event: str) -> None:
     image_cv2 = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
 
-    image_cv2 = cv2.resize(image_cv2, None, fx=scale_3.get() / 10 + 1, fy=scale_3.get() / 10 + 1) 
+    image_cv2 = cv2.resize(image_cv2, None, fx=scale_3.get() / 15 + 1, fy=scale_3.get() / 15 + 1) 
     
     image = PIL.ImageTk.PhotoImage(PIL.Image.fromarray(image_cv2))
 
@@ -167,7 +144,8 @@ def scale_event_3(event: str) -> None:
 
     label_1.image = image
 
-def start_program() -> None:
+# Treinar modelo
+def start_program_train_predict() -> None:
     # Ler diretorio e atribir variaveis 
     X_train, X_test, y_train, y_test = read_data()
 
@@ -185,58 +163,41 @@ def start_program() -> None:
     y_train_binary = convert_binary(y_train)
     y_test_binary = convert_binary(y_test)
 
-    '''
-    # Transformacao para numpy array 
-    X_train = np.array(X_train, dtype="float32")
-    X_train = np.expand_dims(X_train, -1)
-    X_test = np.array(X_test, dtype="float32")
-    X_test = np.expand_dims(X_test, -1)
-    y_train = np.array(y_train)
-    y_train = np.expand_dims(y_train, -1)
-    y_train = np.expand_dims(y_train, -1)
-    y_train = np.expand_dims(y_train, -1)
-    #y_train = tf.keras.utils.to_categorical(y_train, 4)
-    y_test = np.array(y_test)
-    #y_test = tf.keras.utils.to_categorical(y_test, 4)
-    y_train_binary = np.array(y_train_binary, dtype="float32")
-    y_test_binary = np.array(y_test_binary, dtype="float32")
-    '''
-
-    # X_train, X_test = X_train / 255.0, X_test / 255.0 
-    # train_data = tf.data.Dataset.from_tensor_slices((X_train, y_train))
-    # #applying transformations 
-    # train_data = train_data.shuffle(1024) # shuffle the images
-    # train_data = train_data.map(preprocess, num_parallel_calls=AUTO)# mapping our preprocess function to train_data 
-    # train_data = train_data.map(augmentation, num_parallel_calls=AUTO)# mapping our augmentation funtion to train_data
-    # train_data = train_data.batch(BATCH_SIZE) #Converting train_data to batches
-    # train_data = train_data.prefetch(AUTO) # using prefetch which prepares subsequent batches of data while other batches are being computed.
-
-    # test_data = tf.data.Dataset.from_tensor_slices((X_test, y_test))
-    # #applying transformations 
-    # test_data = test_data.map(preprocess, num_parallel_calls=AUTO) # mapping our preprocess function test_data 
-    # test_data = test_data.batch(BATCH_SIZE)
-    # test_data = test_data.prefetch(AUTO) # using prefetch which prepares subsequent batches of data while other batches are being computed.
-
     # Rede Neural ConvNext
     # conv_next(X_train, X_test, y_train, y_test)
 
-   # Rede Neural Convolucional
-    # conv(X_train, X_test, y_train_binary, y_test_binary, 2)
-    conv(X_train, X_test, y_train, y_test, 4)
+    # Rede Neural Convolucional
+    train_predict_conv(X_train, X_test, y_train_binary, y_test_binary, 2)
+    train_predict_conv(X_train, X_test, y_train, y_test, 4)
+
+# Testar modelo
+def start_program_predict() -> None:
+    # Ler diretorio e atribir variaveis 
+    X_train, X_test, y_train, y_test = read_data()
+
+    # Chamada funcao de inversao 
+    X_train, y_train = flip_data(X_train, y_train)
+
+    # Chamada funcao de equalizar
+    X_train, y_train = equalize_data(X_train, y_train)
+
+    # Aplicando segmentacao
+    X_train = apply_threshold(X_train)
+    X_test = apply_threshold(X_test)
+
+    # Conversao para classificacao binária
+    y_train_binary = convert_binary(y_train)
+    y_test_binary = convert_binary(y_test)
+
+    # Rede Neural Convolucional
+    predict_conv(X_train, X_test, y_train_binary, y_test_binary, 2)
+    predict_conv(X_train, X_test, y_train, y_test, 4)
 
 
-# # convert images to float32 format 
-# def preprocess (image):
-#     image = tf.image.convert_image_dtype(image, tf.float32)
-#     return image
-
-# #Peform augmentations on training data
-# def augmentation(image):
-#     image = tf.image.resize_with_crop_or_pad(image, 40, 40) # Add 8 pixels of padding
-#     image = tf.image.random_crop(image, size=[32, 32, 3]) # Random crop back to 32x32
-#     image = tf.image.random_brightness(image, max_delta=0.5) # Random brightness
-#     image = tf.clip_by_value(image, 0., 1.)
-#     return image
+# convertendo imagens para float32
+def preprocess (image):
+    image = tf.image.convert_image_dtype(image, tf.float32)
+    return image
 
 # Verificar se a imagem pertence ao conjunto de testes
 def is_test(file: str) -> bool:
@@ -266,7 +227,7 @@ def read_data() -> tuple:
     for folder in tqdm.tqdm(os.listdir('./mamografias')):
             # Condicional para nao lida arquivos MACOSX
             if folder != '__MACOSX':
-                for file in os.listdir(f'./mamografias/{folder}')[:10]:
+                for file in os.listdir(f'./mamografias/{folder}'):
                     if file.endswith('.png'):
                         image = cv2.imread(f'./mamografias/{folder}/{file}', cv2.IMREAD_GRAYSCALE)
                         # Resize imagens para rede neural
@@ -292,6 +253,11 @@ def flip_data(X_train: list, y_train: list) -> tuple:
         X_transformed.append(cv2.flip(X, flipCode=1))
         y_transformed.append(y)
 
+    # Printando imagem antes e depois da inversao 
+    # print("Inversao de imagem", end="\n\n")
+    # print(X_transformed[0], end="\n\n")
+    # print(X_transformed[len(X_train)], end="\n\n")
+
     return (X_transformed, y_transformed)
 
 # Equalizando histogramas
@@ -303,6 +269,11 @@ def equalize_data(X_train: list, y_train: list) -> tuple:
         X_transformed.append(cv2.equalizeHist(X))
         y_transformed.append(y)
 
+    # Printando imagem antes e depois da equalizacao
+    # print("Equalizacao de histograma", end="\n\n")
+    # print(X_transformed[0], end="\n\n")
+    # print(X_transformed[len(X_train)], end="\n\n") 
+
     return (X_transformed, y_transformed)
     
 # Segmentacao automatica de imagens do diretorio
@@ -311,6 +282,11 @@ def apply_threshold(X_array: list) -> list:
     for X in X_array:
         # Aplicacao de segmentacao binaria em cada item recebido
         X_transformed.append(cv2.threshold(X, 7, 255, cv2.THRESH_BINARY)[1])
+
+    # Printando imagem antes e depois da equalizacao
+    # print("Segmentacao de imagem", end="\n\n")
+    # print(X_array[0], end="\n\n")
+    # print(X_transformed[0], end="\n\n") 
 
     return X_transformed
 
@@ -356,7 +332,7 @@ def convert_binary(y_array: list) -> list:
 
 
 # Rede neural convolucional 
-def conv(X_train: list, X_test: list, y_train: list, y_test: list, classes: int) -> None:
+def train_predict_conv(X_train: list, X_test: list, y_train: list, y_test: list, classes: int) -> None:
     start = time.time()
     
     # Conversao para numpy array
@@ -374,8 +350,8 @@ def conv(X_train: list, X_test: list, y_train: list, y_test: list, classes: int)
     X_test = np.expand_dims(X_test, -1)
 
     # Criacao de classes para o keras
-    y_train = tf.keras.utils.to_categorical(y_train, classes)
-    y_test = tf.keras.utils.to_categorical(y_test, classes)
+    y_train_categorical = tf.keras.utils.to_categorical(y_train, classes)
+    y_test_categorical = tf.keras.utils.to_categorical(y_test, classes)
     
     # Modelo de rede neural convolucional 
     model = tf.keras.Sequential(
@@ -402,10 +378,16 @@ def conv(X_train: list, X_test: list, y_train: list, y_test: list, classes: int)
     ])
 
     # Realizar ajuste dos dados
-    model.fit(X_train, y_train, batch_size=16, epochs=16, validation_split=0.1)
+    model.fit(X_train, y_train_categorical, batch_size=16, epochs=16, validation_split=0.1)
+
+    # Salvar o modelo
+    if classes == 2:
+        model.save('conv_binary')
+    else:
+        model.save('conv')
 
     # Captacao de informacoes para exibir na tela
-    score = model.evaluate(X_test, y_test, verbose=0)
+    score = model.evaluate(X_test, y_test_categorical, verbose=0)
 
     f1_score = 2 * (score[2] * score[3]) / (score[2] + score[3])
 
@@ -443,11 +425,91 @@ def conv(X_train: list, X_test: list, y_train: list, y_test: list, classes: int)
 
         label_3.text = text
 
+        y_pred = model.predict(X_test)
+        
+        matrix = confusion_matrix(np.argmax(y_test_categorical, axis=1), np.argmax(y_pred, axis=1))
+
+        heatmap(matrix, annot=True)
+        matplotlib.pyplot.show()
+
+def predict_conv(X_train: list, X_test: list, y_train: list, y_test: list, classes: int) -> None:
+    start = time.time()
+    
+    # Conversao para numpy array
+    X_train = np.array(X_train, dtype=object)
+    X_test = np.array(X_test, dtype=object)
+    y_train = np.array(y_train, dtype=object)
+    y_test = np.array(y_test, dtype=object)
+
+    # Normalizacao dos dados ( entre 0 e 1 )
+    X_train = X_train.astype('float32') / 255
+    X_test = X_test.astype('float32') / 255
+
+    # Adicionar uma dimensao aos np arrays para atender especificidades da rede
+    X_train = np.expand_dims(X_train, -1)
+    X_test = np.expand_dims(X_test, -1)
+
+    # Criacao de classes para o keras
+    y_train_categorical = tf.keras.utils.to_categorical(y_train, classes)
+    y_test_categorical = tf.keras.utils.to_categorical(y_test, classes)
+
+    # Salvar o modelo
+    if classes == 2:
+        model = tf.keras.saving.load_model('conv_binary')
+    else:
+        model = tf.keras.saving.load_model('conv')
+
+    # Captacao de informacoes para exibir na tela
+    score = model.evaluate(X_test, y_test_categorical, verbose=0)
+
+    f1_score = 2 * (score[2] * score[3]) / (score[2] + score[3])
+
+    # Modelo Binario
+    if classes == 2:
+        text = f'''
+            Binário (2 Classes):\n
+            Loss: {score[0]:.4f}
+             Acurácia: {score[1]:.4f}
+             F1 Score: {f1_score:.4f}
+             Precisao: {score[2]:.4f}
+             Sensibilidade: {score[3]:.4f}
+             Especificidade: {score[4]:.4f}
+             Tempo: {time.time() - start:.2f}s
+        '''
+        
+        label_2.configure(text=text)
+
+        label_2.text = text
+        
+    # Modelo 4 classes
+    else:
+        text = f'''
+            4 Classes:\n
+            Loss: {score[0]:.4f}
+             Acurácia: {score[1]:.4f}
+             F1 Score: {f1_score:.4f}
+             Precisao: {score[2]:.4f}
+             Sensibilidade: {score[3]:.4f}
+             Especificidade: {score[4]:.4f}
+             Tempo: {time.time() - start:.2f}s
+        '''
+        
+        label_3.configure(text=text)
+
+        label_3.text = text
+
+        y_pred = model.predict(X_test)
+        
+        matrix = confusion_matrix(np.argmax(y_test_categorical, axis=1), np.argmax(y_pred, axis=1))
+
+        heatmap(matrix, annot=True)
+        matplotlib.pyplot.show()
+
 
 # Usando tkinter para leitura de imagens
 # Permitindo buscar arquivos png e tiff na biblioteca 
 root = tkinter.Tk()
-root.geometry('1024x512')
+root.geometry('1024x1024')
 filetypes = (('PNG File', '*.png'), ('TIFF File', '*.tiff'))
 file_name = tkinter.filedialog.askopenfilename(filetypes=filetypes)
 
@@ -488,7 +550,8 @@ scale_3 = tkinter.Scale(
 )
 
 #Botoes
-button = tkinter.Button(root, text="Treinar Modelo", command=start_program)
+button_1 = tkinter.Button(root, text="Treinar Modelo", command=start_program_train_predict)
+# button_2 = tkinter.Button(root, text="Executar modelo treinado", command=start_program_predict)
 
 #Chamada de componentes
 label_1 = tkinter.Label(root, image=image)
@@ -498,8 +561,8 @@ label_3 = tkinter.Label(root, text='')
 scale_1.pack()
 scale_2.pack()
 scale_3.pack()
-button.pack()
-
+button_1.pack()
+button_2.pack()
 
 label_2.pack()
 label_3.pack()
