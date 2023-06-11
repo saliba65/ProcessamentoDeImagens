@@ -306,7 +306,7 @@ def convert_binary(y_array: list) -> list:
 
     return y_transformed
 
-# Aplicacao da rede neural ConvNext 
+# # Tentativa aplicacao da rede neural ConvNext 
 # def conv_next(X_train: np.array, X_test: np.array, y_train: np.array, y_test: np.array) -> None:
 #     model = tf.keras.applications.ConvNeXtBase(
 #         model_name="convnext_base",
