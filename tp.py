@@ -316,7 +316,7 @@ def crop(X_array: list) -> list:
     X_transformed = []
     for X in X_array:
         # Aplicando crop/corte na imagem 
-        X_transformed.append(X[20:X.shape[0] - 20, 20:X.shape[1] - 20,])
+        X_transformed.append(X[15:X.shape[0] - 15, 15:X.shape[1] - 15,])
 
     return X_transformed
 
@@ -386,12 +386,10 @@ def train_predict_conv(X_train: list, X_test: list, y_train: list, y_test: list,
     # Modelo de rede neural convolucional 
     model = tf.keras.Sequential(
         [
-            tf.keras.Input(shape=(164, 164, 1)),
-            tf.keras.layers.Conv2D(16, kernel_size=(3, 3), activation="relu"),
-            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
-            tf.keras.layers.Conv2D(32, kernel_size=(3, 3), activation="relu"),
-            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            tf.keras.Input(shape=(194, 194, 1)),
             tf.keras.layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
+            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            tf.keras.layers.Conv2D(512, kernel_size=(3, 3), activation="relu"),
             tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dropout(0.5),
