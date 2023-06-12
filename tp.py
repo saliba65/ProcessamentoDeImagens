@@ -248,7 +248,7 @@ def read_data() -> tuple:
     for folder in tqdm.tqdm(os.listdir('./mamografias')):
             # Condicional para nao lida arquivos MACOSX
             if folder != '__MACOSX':
-                for file in os.listdir(f'./mamografias/{folder}')[:10]:
+                for file in os.listdir(f'./mamografias/{folder}'):
                     if file.endswith('.png'):
                         image = cv2.imread(f'./mamografias/{folder}/{file}', cv2.IMREAD_GRAYSCALE)
                         # Resize imagens para rede neural
@@ -406,7 +406,7 @@ def train_predict_conv(X_train: list, X_test: list, y_train: list, y_test: list,
     ])
 
     # Realizar ajuste dos dados
-    model.fit(X_train, y_train_categorical, batch_size=16, epochs=2, validation_split=0.1)
+    model.fit(X_train, y_train_categorical, batch_size=16, epochs=16, validation_split=0.1)
 
     # Salvar o modelo
     if classes == 2:
