@@ -142,10 +142,10 @@ def scale_event_2(event: str) -> None:
 def scale_event_3(event: str) -> None:
     image_cv2 = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
 
-    # image_cv2 = cv2.resize(image_cv2, None, fx=scale_3.get() / 10 + 0.1 , fy=scale_3.get() / 20 + 0.1) 
+    image_cv2 = cv2.resize(image_cv2, None, fx=scale_3.get() / 10 + 0.1 , fy=scale_3.get() / 20 + 0.1) 
 
-    # if(scale_3.get() == 0):
-    #     image_cv2 = cv2.resize(image_cv2, (384, 384))
+    if(scale_3.get() == 0):
+        image_cv2 = cv2.resize(image_cv2, (384, 384))
     
     image = PIL.ImageTk.PhotoImage(PIL.Image.fromarray(image_cv2))
 
