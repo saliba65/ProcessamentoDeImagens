@@ -144,10 +144,14 @@ def scale_event_3(event: str) -> None:
 
     image_cv2 = cv2.resize(image_cv2, None, fx=scale_3.get() / 10 + 0.1 , fy=scale_3.get() / 20 + 0.1) 
 
+    arr = np.array(image_cv2)
+    arr = arr[20:arr.shape[0] - 20, 20:arr.shape[1] - 20,]
+
+    # Zoom out
     if(scale_3.get() == 0):
-        image_cv2 = cv2.resize(image_cv2, (384, 384))
+        arr = cv2.resize(arr, (384, 384))
     
-    image = PIL.ImageTk.PhotoImage(PIL.Image.fromarray(image_cv2))
+    image = PIL.ImageTk.PhotoImage(PIL.Image.fromarray(arr))
 
     label_1.configure(image=image)
 
@@ -180,7 +184,7 @@ def start_program_train_predict() -> None:
     # conv_next(X_train, X_test, y_train, y_test)
 
     # Rede Neural Convolucional
-    # train_predict_conv(X_train, X_test, y_train_binary, y_test_binary, 2)
+    train_predict_conv(X_train, X_test, y_train_binary, y_test_binary, 2)
     train_predict_conv(X_train, X_test, y_train, y_test, 4)
 
 # Testar modelo
@@ -307,12 +311,12 @@ def apply_threshold(X_array: list) -> list:
 
     return X_transformed
 
-# Recortando a imagem em 30px para remover bordas indesejadas
+# Recortando a imagem em 20px para remover bordas indesejadas
 def crop(X_array: list) -> list:
     X_transformed = []
     for X in X_array:
         # Aplicando crop/corte na imagem 
-        X_transformed.append(X[30:X.shape[0] - 30, 30:X.shape[1] - 30,])
+        X_transformed.append(X[20:X.shape[0] - 20, 20:X.shape[1] - 20,])
 
     return X_transformed
 
@@ -383,11 +387,11 @@ def train_predict_conv(X_train: list, X_test: list, y_train: list, y_test: list,
     model = tf.keras.Sequential(
         [
             tf.keras.Input(shape=(164, 164, 1)),
+            tf.keras.layers.Conv2D(16, kernel_size=(3, 3), activation="relu"),
+            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            tf.keras.layers.Conv2D(32, kernel_size=(3, 3), activation="relu"),
+            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
             tf.keras.layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
-            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
-            tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation="relu"),
-            tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
-            tf.keras.layers.Conv2D(256, kernel_size=(3, 3), activation="relu"),
             tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dropout(0.5),
