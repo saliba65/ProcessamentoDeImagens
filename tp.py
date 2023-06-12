@@ -110,8 +110,11 @@ def scale_event_1(event: str) -> None:
     image_cv2 = cv2.addWeighted(image_cv2, scale_1.get(), 0, 0, 0)
 
     image_cv2 = cv2.resize(image_cv2, (384, 384))
+
+    arr = np.array(image_cv2)
+    arr = arr[20:arr.shape[0] - 20, 20:arr.shape[1] - 20,]
     
-    image = PIL.ImageTk.PhotoImage(PIL.Image.fromarray(image_cv2))
+    image = PIL.ImageTk.PhotoImage(PIL.Image.fromarray(arr))
 
     label_1.configure(image=image)
 
@@ -125,8 +128,11 @@ def scale_event_2(event: str) -> None:
     image_cv2 = cv2.threshold(image_cv2, scale_2.get(), 255, cv2.THRESH_BINARY)[1]
 
     image_cv2 = cv2.resize(image_cv2, (384, 384))
+
+    arr = np.array(image_cv2)
+    arr = arr[20:arr.shape[0] - 20, 20:arr.shape[1] - 20,]
     
-    image = PIL.ImageTk.PhotoImage(PIL.Image.fromarray(image_cv2))
+    image = PIL.ImageTk.PhotoImage(PIL.Image.fromarray(arr))
 
     label_1.configure(image=image)
 
@@ -136,7 +142,10 @@ def scale_event_2(event: str) -> None:
 def scale_event_3(event: str) -> None:
     image_cv2 = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
 
-    image_cv2 = cv2.resize(image_cv2, None, fx=scale_3.get() / 15 + 1, fy=scale_3.get() / 15 + 1) 
+    # image_cv2 = cv2.resize(image_cv2, None, fx=scale_3.get() / 10 + 0.1 , fy=scale_3.get() / 20 + 0.1) 
+
+    # if(scale_3.get() == 0):
+    #     image_cv2 = cv2.resize(image_cv2, (384, 384))
     
     image = PIL.ImageTk.PhotoImage(PIL.Image.fromarray(image_cv2))
 
@@ -159,6 +168,10 @@ def start_program_train_predict() -> None:
     X_train = apply_threshold(X_train)
     X_test = apply_threshold(X_test)
 
+    # Aplicando crop
+    X_train = crop(X_train)
+    X_test = crop(X_test)
+
     # Conversao para classificacao binária
     y_train_binary = convert_binary(y_train)
     y_test_binary = convert_binary(y_test)
@@ -167,7 +180,7 @@ def start_program_train_predict() -> None:
     # conv_next(X_train, X_test, y_train, y_test)
 
     # Rede Neural Convolucional
-    train_predict_conv(X_train, X_test, y_train_binary, y_test_binary, 2)
+    # train_predict_conv(X_train, X_test, y_train_binary, y_test_binary, 2)
     train_predict_conv(X_train, X_test, y_train, y_test, 4)
 
 # Testar modelo
@@ -184,6 +197,10 @@ def start_program_predict() -> None:
     # Aplicando segmentacao
     X_train = apply_threshold(X_train)
     X_test = apply_threshold(X_test)
+
+    # # Aplicando crop
+    X_train = crop(X_train)
+    X_test = crop(X_test)
 
     # Conversao para classificacao binária
     y_train_binary = convert_binary(y_train)
@@ -227,7 +244,7 @@ def read_data() -> tuple:
     for folder in tqdm.tqdm(os.listdir('./mamografias')):
             # Condicional para nao lida arquivos MACOSX
             if folder != '__MACOSX':
-                for file in os.listdir(f'./mamografias/{folder}'):
+                for file in os.listdir(f'./mamografias/{folder}')[:10]:
                     if file.endswith('.png'):
                         image = cv2.imread(f'./mamografias/{folder}/{file}', cv2.IMREAD_GRAYSCALE)
                         # Resize imagens para rede neural
@@ -287,6 +304,15 @@ def apply_threshold(X_array: list) -> list:
     print("Segmentacao de imagem", end="\n\n")
     print(X_array[0], end="\n\n")
     print(X_transformed[0], end="\n\n") 
+
+    return X_transformed
+
+# Recortando a imagem em 30px para remover bordas indesejadas
+def crop(X_array: list) -> list:
+    X_transformed = []
+    for X in X_array:
+        # Aplicando crop/corte na imagem 
+        X_transformed.append(X[30:X.shape[0] - 30, 30:X.shape[1] - 30,])
 
     return X_transformed
 
@@ -356,7 +382,7 @@ def train_predict_conv(X_train: list, X_test: list, y_train: list, y_test: list,
     # Modelo de rede neural convolucional 
     model = tf.keras.Sequential(
         [
-            tf.keras.Input(shape=(224, 224, 1)),
+            tf.keras.Input(shape=(164, 164, 1)),
             tf.keras.layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
             tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
             tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation="relu"),
@@ -378,7 +404,7 @@ def train_predict_conv(X_train: list, X_test: list, y_train: list, y_test: list,
     ])
 
     # Realizar ajuste dos dados
-    model.fit(X_train, y_train_categorical, batch_size=16, epochs=16, validation_split=0.1)
+    model.fit(X_train, y_train_categorical, batch_size=16, epochs=2, validation_split=0.1)
 
     # Salvar o modelo
     if classes == 2:
@@ -516,6 +542,10 @@ file_name = tkinter.filedialog.askopenfilename(filetypes=filetypes)
 # Redimencionando a imagem para o tamanho ideal da janela
 image = PIL.Image.open(file_name)
 image = image.resize((384, 384))
+
+arr = np.array(image)
+arr = arr[20:arr.shape[0] - 20, 20:arr.shape[1] - 20,]
+image = PIL.Image.fromarray(arr)
 
 image = PIL.ImageTk.PhotoImage(image)
 
