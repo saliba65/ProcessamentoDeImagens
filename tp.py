@@ -406,7 +406,7 @@ def train_predict_conv(X_train: list, X_test: list, y_train: list, y_test: list,
     ])
 
     # Realizar ajuste dos dados
-    model.fit(X_train, y_train_categorical, batch_size=16, epochs=16, validation_split=0.1)
+    model.fit(X_train, y_train_categorical, batch_size=16, epochs=14, validation_split=0.1)
 
     # Salvar o modelo
     if classes == 2:
